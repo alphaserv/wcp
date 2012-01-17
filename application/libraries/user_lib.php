@@ -1,8 +1,8 @@
 <?php
 
-class user
+class user_
 {
-	private $CI;
+	//private $CI;
 	private $user_id;
 	
 	private $logged_in;
@@ -13,10 +13,9 @@ class user
 	private $cached_settings;
 	private $cached_access;
 	
-	function __construct(int $id)
+	function __construct($id)
 	{
-		$this->CI =& get_instance();
-		
+	
 		$this->user_id = $id;
 		if($id == -1)
 			$this->logged_in = false;
@@ -31,17 +30,27 @@ class user
 	{
 		return $this->user_id;
 	}
+	function is_logged_in()
+	{
+		return (bool)$this->logged_in;
+	}
 	
 	function get_acces_to(string $name)
 	{
+		static $CI;
+		if(!isset($CI)) $CI =& get_instance();
 		#decbin($name)
-		return $this->CI->user_m->user_access($this->user_id, $name);
+		return $CI->user_m->user_access($this->user_id, $name);
 	}
 	
 	function get_setting(string $name)
 	{
+		static $CI;
+
 		if(isset($this->cached_settings[$name]))
 			return $this->cached_settings[$name]; #do not encrypt cache (assuming we don't have a 16-core server)
+
+		if(!isset($CI)) $CI =& get_instance();
 		
 		#cache
 		$this->cached_settings[$name] = $this->CI->userdata_m->get($this->user_id, $name, true);
@@ -50,7 +59,10 @@ class user
 	
 	function set_setting(string $name, $value)
 	{
+		static $CI;
 		$this->cached_settings[$name] = $value;
+	
+		if(!isset($CI)) $CI =& get_instance();
 		
 		#save in db
 		$this->CI->userdata_m->set($this->user_id, $name, $value);
@@ -61,6 +73,16 @@ class user
 		if(!$this->logged_in)
 			throw new exception ('cannot update data of non-logged in user');
 		
+	}
+	
+	function destroy()
+	{
+		#logout
+	}
+	
+	function save()
+	{
+		User_lib::$currentuser =& $this;
 	}
 }
 
@@ -73,21 +95,14 @@ class User_lib
 	
 	public static $users;
 	
-	function __construct(int $id = -1)
+	function __construct(/*int*/ $id = -1)
 	{
-		static $executed;
-		
-		if(isset($executed))
-			throw new exception('trying to create a second '.__CLASS__.' instance.');
-		else
-			$executed = true;
-			
 		$this->CI =& get_instance();
-		
-		$usr = $this->CI->session->userdata('User');
+		$this->CI->load->library('session');
+		$usr = unserialize($this->CI->session->userdata('User'));
 		
 		if(!$usr)
-			static::$currentuser = new user($id);
+			static::$currentuser = new user_($id);
 		else
 		{
 			static::$currentuser =& $usr;
@@ -95,12 +110,13 @@ class User_lib
 		}
 		
 		static::$users[$id] =& static::$currentuser;
+		
 	}
 	
 	function __destruct()
 	{
 		#save in cache
-		$this->CI->session->set_userdata('User', static::$currentuser);
+		$this->writedown();
 	}
 	
 	function &get_user(int $id)
@@ -113,4 +129,16 @@ class User_lib
 		return static::$currentuser;
 	}
 
+	function change_user(user_ &$new_user)
+	{
+		$id = $new_user->get_user_id();
+		$this->CI->session->set_userdata('User', serialize(static::$currentuser));
+		static::$currentuser =& $new_user;
+		static::$users[$id] =& static::$currentuser;
+	}
+	
+	function writedown()
+	{
+		$this->CI->session->set_userdata('User', serialize(static::$currentuser));
+	}
 }

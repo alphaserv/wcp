@@ -21,5 +21,6 @@ class Clan_m
 	function reservedclantag()
 	{
 		#check if a name uses a reserved clantag
+		#TODO
 	}
 }

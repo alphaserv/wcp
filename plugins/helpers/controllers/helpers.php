@@ -41,6 +41,52 @@ class Helpers extends MX_Controller
 					return $setting;
 				break;
 			
+			case 'url':
+				$this->load->helper('url');
+				
+				if(!isset($parse['segments'][1]))
+					$parse['segments'][1] = 'base';
+				
+				switch($parse['segments'][1])
+				{
+					default:
+					case 'base':
+						return base_url($parse['attributes']['url']);
+						break;
+					case 'site':
+						return site_url($parse['attributes']['url']);
+						break;
+					
+					case 'current':
+						return current_url();
+						break;
+						
+					case 'string':
+						return uri_string();
+						break;
+						
+					case 'index_page':
+						return index_page();
+						break;
+					
+					case 'anchor':
+					case 'anchor_popup':
+					case 'mailto':
+					case 'safe_mailto':
+					case 'auto_link':
+					case 'url_title':
+					case 'prep_url':
+						throw new exception($parse['segments']['1'].' is not supported yet: TOO_LAZY_TO_IMPLEMENT error');
+						break;
+					
+					case 'redirect':
+						throw new exception('Template redirect blocked.');
+						break;
+					
+				}
+				
+				break;
+				
 			default:
 				throw new exception('could not find hlper type');
 				break;

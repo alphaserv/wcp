@@ -4,8 +4,7 @@ class Userdata_m extends CI_Model
 {
 	function __construct()
 	{
-		if(!isset($this->user_m))
-			$this->load->mode('user_m');
+		$this->load->model('user_m');
 	}
 	
 	private function get_user_id()

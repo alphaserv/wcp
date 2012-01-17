@@ -10,15 +10,15 @@ class User_m extends CI_Model
 			4, no approval 
 	
 	*/
-	static const ACTIVATION_TYPE_BOTH = 3;
-	static const ACTIVATION_TYPE_ADMIN = 2;
-	static const ACTIVATION_TYPE_EMAIL = 1;
-	static const ACTIVATION_TYPE_NONE = 0;
+	const ACTIVATION_TYPE_BOTH = 3;
+	const ACTIVATION_TYPE_ADMIN = 2;
+	const ACTIVATION_TYPE_EMAIL = 1;
+	const ACTIVATION_TYPE_NONE = 0;
 	
-	static const ACTIVATION_STATUS_COMPLETE = 3;
-	static const ACTIVATION_STATUS_EMAIL = 2;
-	static const ACTIVATION_STATUS_ADMIN = 1;
-	static const ACTIVATION_STATUS_NONE = 0;
+	const ACTIVATION_STATUS_COMPLETE = 3;
+	const ACTIVATION_STATUS_EMAIL = 2;
+	const ACTIVATION_STATUS_ADMIN = 1;
+	const ACTIVATION_STATUS_NONE = 0;
 	
 	
 	function __construct()
@@ -31,7 +31,13 @@ class User_m extends CI_Model
 	
 	public function get_acces_to(string $actionname, int $user_id)
 	{
-	
+		$return |= Auth::access_read;
+		$return |= Auth::access_write;
+		$return |= Auth::access_delete;
+		$return |= Auth::access_create;
+		$return |= Auth::access_manage;
+		
+		return $return;
 	}
 	
 
@@ -47,8 +53,18 @@ class User_m extends CI_Model
 		- $password the password of the user
 	*/
 	
-		#query the database
-		$result = $this->db->query('SELECT `users`.`id`, `web_users`.`pass`, `users`.`priv`, `users`.`email`, `web_users`.`activated` FROM users, web_users WHERE `users`.`name` = ? AND `users`.`id` = `web_users`.`user_id`;', array($username));
+		#query the database TODO:implement new hashing method
+		$result = $this->db->query('SELECT
+										users.id,
+										web_users.pass,
+										users.email
+									FROM
+										users,
+										web_users
+									WHERE
+										users.name = ?
+									AND
+										users.id = web_users.user_id;', array($username));
 
 		if (!$result)
 			throw new exception('could not retreive user from database.');
@@ -65,13 +81,13 @@ class User_m extends CI_Model
 #				$pass = $this->hash->checkuserpassword($pass, $row->key);
 #			else
 				$pass = $this->hash->hash($password);
-		
+			echo $pass;
 			if($pass == $row->pass)
-				return true;
+				return array(true, $row->id);
 		}
 
 		#username or password error
-		return false
+		return array(false);
 	}
 	
 	public function set_activation($key, $is_admin = false, $change_to = 1)
@@ -115,7 +131,7 @@ class User_m extends CI_Model
 			return self::ACTIVATION_STATUS_NONE;
 	}
 	
-	public function check_activations(int $max = 10)
+	public function check_activations(/*int error*/ $max = 10)
 	{
 		$result = $this->db->query('SELECT 
 										id,
@@ -159,7 +175,12 @@ class User_m extends CI_Model
 				
 				#extra, probebly unneeded check
 				if ($this->db->trans_status() === TRUE)
+				{
 					$this->db->query('DELETE FROM web_activation WHERE id = ?', array($row['id']));
+					$this->db->trans_commit();
+				}
+				else
+					$this->db->trans_rollback();
 			
 			#end of safe transaction
 			$this->db->trans_complete();
