@@ -81,7 +81,7 @@ class User_m extends CI_Model
 #				$pass = $this->hash->checkuserpassword($pass, $row->key);
 #			else
 				$pass = $this->hash->hash($password);
-			echo $pass;
+
 			if($pass == $row->pass)
 				return array(true, $row->id);
 		}
