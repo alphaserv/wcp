@@ -359,13 +359,10 @@ $config['proxy_ips'] = '';
 
 /*
 |--------------------------------------------------------------------------
-| Reverse Proxy IPs
+| Modules locations
 |--------------------------------------------------------------------------
 |
-| If your server is behind a reverse proxy, you must whitelist the proxy IP
-| addresses from which CodeIgniter should trust the HTTP_X_FORWARDED_FOR
-| header in order to properly identify the visitor's IP address.
-| Comma-delimited, e.g. '10.0.1.200,10.0.1.201'
+| The folders where modules are located.
 |
 */
 
@@ -374,6 +371,28 @@ $config['modules_locations'] = array(
 	dirname(APPPATH).'/plugins/' => '../../plugins/',
 );
 
+/*
+|--------
+| Supported Languages
+|-----------------------
+|
+|
+|
+*/
+$config['default_language'] = 'en';
+$config['supported_languages'] = array(
+	'en' => array(
+		'folder_name' => 'en',
+		'use_database' => true
+	),
+	'nl' => array(
+		'folder_name' => 'nl',
+		'use_database' => true
+	)
+
+);
+
+$config['activation_type'] = 3;
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */

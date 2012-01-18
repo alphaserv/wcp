@@ -99,6 +99,7 @@ class User_lib
 	{
 		$this->CI =& get_instance();
 		$this->CI->load->library('session');
+		#extra unserialize to prevent errors becouse the session class is loaded before this class
 		$usr = unserialize($this->CI->session->userdata('User'));
 		
 		if(!$usr)

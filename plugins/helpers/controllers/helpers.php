@@ -25,6 +25,10 @@ class Helpers extends MX_Controller
 					if(defined('OMG_DEBUG'))
 						print_r($parse['attributes']);
 					
+					#closure
+					$handler = $this->config->item('lang_handler');
+					return $handler($parse['attributes']['string'], ((isset($parse['attributes']['forcelang']) && $parse['attributes']['forcelang'] != 0) ? $parse['attributes']['forcelang'] : null), ((isset($parse['attributes']['nodboverride']) && $parse['attributes']['nodboverride'] == 1) ? true : false));
+					/*
 					#cache!!!!!
 					$this->db->cache_on();
 					
@@ -38,7 +42,7 @@ class Helpers extends MX_Controller
 					
 					$this->db->cache_off();
 					
-					return $setting;
+					return $setting;*/
 				break;
 			
 			case 'url':

@@ -2,6 +2,7 @@
 	<head>
 	
 		<link href="{as:helpers:url:base url='static/css/ui-lightness/jquery-ui-1.8.17.custom.css'}" rel="stylesheet" type="text/css" />
+		<link href="{as:helpers:url:base url='templates/templatea/css/main.css'}" rel="stylesheet" type="text/css" />
 		
 		<script type="text/javascript" src="{as:helpers:url:base url='static/js/jquery-1.7.1.min.js'}"></script>
 		<script type="text/javascript" src="{as:helpers:url:base url='static/js/jquery-ui-1.8.17.custom.min.js'}"></script>

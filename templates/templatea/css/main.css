@@ -14,139 +14,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 body, th, td, input, textarea, select {
-	font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+/*	font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
 	font-size: 11px;
-	color: #696969;
+	color: #696969;*/
 }
 
 p, blockquote, ul, ol, dl {
 	margin-top: 0px;
 	margin-bottom: 1em;
 	text-align: justify;
-}
-
-a {
-	color: #525252;
-}
-
-a:hover {
-	text-decoration: none;
-}
-
-.text1 {
-	padding-left: 25px;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 18px;
-	color: #FFFFFF;
-}
-
-.text2 {
-	padding-left: 28px;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 11px;
-	color: #FFFFFF;
-}
-
-.text3 {
-	text-align: center;
-	font-size: 10px;
-	color: #999999;
-}
-
-.text4 {
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 11px;
-	color: #4B4B4B;
-}
-
-.style1 {
-	text-align: center;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 11px;
-}
-
-.style1 a {
-	text-decoration: none;
-	color: #4B4B4B;
-}
-
-.style1 a:hover {
-	text-decoration: underline;
-	color: #DE3C0B;
-}
-
-.bg1 {
-	background: url(images/img1.jpg) no-repeat left top;
-	height: 200px;
-}
-
-.bg2 {
-	background: url(images/img2.jpg) no-repeat left top;
-	width: 152px;
-	height: 41px;
-}
-
-.bg3 {
-	background: url(images/img3.jpg) no-repeat left top;
-	width: 154px;
-	height: 41px;
-}
-
-.bg4 {
-	background: url(images/img4.jpg) no-repeat left top;
-	width: 151px;
-	height: 41px;
-}
-
-.bg5 {
-	background: url(images/img5.jpg) no-repeat left top;
-	width: 151px;
-	height: 41px;
-}
-
-.bg6 {
-	background: url(images/img6.jpg) no-repeat left top;
-	width: 152px;
-	height: 41px;
-}
-
-.bg7 {
-	background: url(images/img7.jpg) repeat-x left top;
-}
-
-.bg8 {
-	background: url(images/img9.gif) repeat-y center top;
-}
-
-.bg10 {
-	background: #FFFDF2;
-	border: 1px solid #FFF6CC;
-	padding: 20px 20px;
-
-}
-
-.align-justify { text-align: justify; }
-.align-right { text-align: right; }
-
-img { border: none; }
-
-.img1 {
-	float: left;
-	margin: 3px 15px 0px 0px;
-}
-
-.img2 {
-	float: right;
-	margin: 3px 0px 0px 15px;
-}
-
-hr { display: none; }
-
-.hr1 {
-	height: 1px;
 }
 

@@ -189,7 +189,7 @@ class User_m extends CI_Model
 		$result->free_result();
 		return true;
 	}
-	function register ($email, $pass, $as_pass, $username, $activation_type = 0, $priv = 50)
+	function register ($email, $pass, $as_pass, $username, $activation_type = 3, $priv = 50)
 	{
 	/*
 		description: function to register users
@@ -205,7 +205,8 @@ class User_m extends CI_Model
 		if($pass == $as_pass) #insecure we require different passwords
 			throw new exception ('your ingame password is currently the same as your online one, please use two different ones');#TODO:use user error
 		
-		#encode the password
+		$this->load->library('hash');
+		#encode the password TODO: new encryption 
 		$pass = $this->hash->hash($pass);
 		
 		#chek if an user with that password does't already exist and not already is activated
@@ -218,6 +219,7 @@ class User_m extends CI_Model
 		if($result->num_rows() > 0)
 		{
 			#user already registered
+			print_r($result->result_object());
 			$result->free_result();
 			throw new exception('The username / the email-address is already in use, please choose another email address / username.');#TODO:use user error
 		}
@@ -244,7 +246,7 @@ class User_m extends CI_Model
 		unset($result);
 		
 		#generate an unique register id
-		$code = $this->hash->hash(mt_rand().$this->config->item('salt').$pass.$username.$email.$priv.$as_pass.$this->config->item('pepper').microtime().unique_id()); #compex enough? ;-)
+		$code = $this->hash->hash(mt_rand().$this->config->item('salt').$pass.$username.$email.$priv.$as_pass.$this->config->item('pepper').microtime().uniqid()); #compex enough? ;-)
 		
 		$a = 0;
 		$b = 0;
