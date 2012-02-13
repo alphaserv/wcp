@@ -1,0 +1,7 @@
+[submodule "application/third_party/MC-Query"]
+	path = application/third_party/MC-Query
+	url = git://github.com/xPaw/PHP-Minecraft-Query.git
+
+[submodule "application/third_party/MC-Status"]
+	path = application/third_party/MC-Status
+	url = git://github.com/xPaw/PHP-Minecraft-Query.git

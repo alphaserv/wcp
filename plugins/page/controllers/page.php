@@ -1,5 +1,4 @@
 <?php
-
 class Page extends MX_Controller
 {
 
@@ -11,14 +10,17 @@ class Page extends MX_Controller
 		$this->load->library('template');
 		$this->load->library('parser');
 	}
+	
+	function not_found()
+	{
+		$this->uri->segments;
+		echo '?';
+	}
+	
 	function index()
 	{
-		echo 'GO!'.PHP_EOL;
-		$this->load->library('serverinfo');
-		$serv = new AS_Cube2Server;
-		$serv->host = 'psl.sauerleague.org';
-		$serv->port = 10000;
-		$serv->query();
+		$this->library->load('content_handlers');
+		print_r($this->page->get_content('/'));
 		
 		#TODO: custom layout support
 #		$page = $this->page->gethomepage();

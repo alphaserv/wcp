@@ -99,9 +99,9 @@ class User_m extends CI_Model
 		
 		
 		if ($is_admin)
-			$sql = 'UPDATE web_activation SET `admin_activated` = ? WHERE `activation_id` = ?;';
+			$sql = 'UPDATE web_activation SET admin_activated = ? WHERE activation_id = ?;';
 		else
-			$sql = 'UPDATE web_activation SET `user_activated` = ? WHERE `activation_id` = ?;';
+			$sql = 'UPDATE web_activation SET user_activated = ? WHERE activation_id = ?;';
 		
 		return (bool) $this->db->query($sql, array($change_to, $key));
 	}
@@ -210,7 +210,7 @@ class User_m extends CI_Model
 		$pass = $this->hash->hash($pass);
 		
 		#chek if an user with that password does't already exist and not already is activated
-		$result = $this->db->query('SELECT `name` FROM `users` WHERE `name` = ? OR `email` = ?;', array($username, $email));
+		$result = $this->db->query('SELECT name FROM users WHERE name = ? OR email = ?;', array($username, $email));
 
 		if(!$result)
 			throw new exception('could not check if the name is already in use');
@@ -229,7 +229,7 @@ class User_m extends CI_Model
 		unset($result);
 		
 		#did the user register but not activate?
-		$result = $this->db->query('SELECT activation_id FROM web_activation WHERE `username` = ? OR `email` = ?', array($username, $email));
+		$result = $this->db->query('SELECT activation_id FROM web_activation WHERE username = ? OR email = ?', array($username, $email));
 		
 		if(!$result)
 			throw new exception('could not check if the name is already in use');
@@ -322,6 +322,61 @@ class User_m extends CI_Model
 
 		#return activation id
 		return array('code' => $code, 'activation_type' => $activation_type);
+	}
+	
+	function add_to_group($group_id, $user_id)
+	{
+		$this->db->query('INSERT INTO groups_users (id, group_id, user_id) VALUES (NULL, ?, ?);', array($group_id, $user_id);
+	}
+	
+	function create_group($name)
+	{
+		if(!$this->db->query('INSERT INTO groups (name, crated_date) VALUES (?, NOW());', array($name)))
+			throw new exception('could not create group');
+		
+		return $this->db->insert_id();
+	}
+	
+	function group_access($group_id)
+	{
+		#get an array with privileges of a group
+		return $this->db->query('
+			SELECT
+				rules_groups.rule_id AS id,
+				rules.name AS name, rules.on_id AS on_id
+			
+			FROM
+				rules_groups,
+				rules
+			
+			WHERE
+				rules_groups.group_id = ?
+				
+			AND
+				rules_groups.rule_id = rules.id')->result_object();
+	}
+	
+	
+	function user_access($user_id)
+	{
+		return $this->db->query('
+			SELECT
+				rules_groups.rule_id AS id,
+				rules.name AS name,
+				rules.on_id AS on_id
+			
+			FROM
+				rules_groups,
+				rules,
+				groups_users
+			WHERE
+				groups_users.user_id = ?
+			
+			AND
+				rules_groups.group_id = groups_users.group_id
+			
+			AND
+				rules_groups.rule_id = rules.id')->result_object();
 	}
 }
 

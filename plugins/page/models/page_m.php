@@ -1,7 +1,39 @@
 <?php
 
+class page_not_found_exception extends Exception {}
+
 class page_m extends CI_Model
 {
+	function get_content($path)
+	{
+		$result = $this->db->query('
+			SELECT
+				id,
+				uri,
+				title,
+				min_priv,
+				revision,
+				content,
+				edit_priv,
+				date,
+				BIN(is_homepage) as is_homepage,
+				makeup
+			FROM
+				web_pages
+			WHERE
+				uri = ?
+			LIMIT
+				1;', array($path));
+		
+		if(!$result)
+			throw new exception('could not retrieve page from database, internal error');	
+		
+		if($result->num_rows() != 1)
+			throw new page_not_found_exception;
+		
+		return $result->first_row();
+	}
+
 	function gethomepage()
 	{
 		$result = $this->db->query('SELECT `id`, `uri`, `title`, `min_priv`, `revision`, `content`, `edit_priv`, `date`, BIN(`is_homepage`) as `is_homepage` FROM web_pages WHERE is_homepage = "1" LIMIT 1');

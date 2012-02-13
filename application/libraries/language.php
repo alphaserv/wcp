@@ -21,7 +21,7 @@ class Language
 
 
 		#enable $_GET
-		parse_str($_SERVER['QUERY_STRING'], $_GET);
+		parse_str($CI->input->server('QUERY_STRING'), $_GET);
 		
 		if(($lang = $CI->session->userdata('language_code')) === false || isset($_GET['changelanguage']))
 		{

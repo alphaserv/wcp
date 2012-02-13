@@ -1,19 +1,37 @@
 <?php
-$sauermaster_host = 'sauerbraten.org';
-$sauermaster_port = 28787;
+
 class Servers extends MX_Controller
 {
 	function __construct()
 	{
 		parent::__construct();
-//		$this->load->library('serverinfo');
+		$this->load->library('mc_status'); #for minecraft servers
+		$this->load->model('server_m');
 	}
-	function index($max_servers = 15)
+	function index()
 	{
-		$this->gameq->get_from_db();
-		$this->gameq->list_players($max_servers);
+		#$server = new AS_SauerServer();
+		#$server->host = 'localhost';
+		$server = new AS_McServer();
+		$server->host = 'alphaserv-web.tk';
+		//$server->port = 28785;
+		/*
+		$server->host = 'nooblounge.net';
+		$server->port = 10030;
+		$server->host = 'psl.sauerleague.org';
+		$server->port = 10000;
+		*/
+		
+		print_r($server);
+		$server->connect();
+		
+		//print_r((int)$server->is_hopmod_server());
+		//print_r((int)$server->is_alphaserv_server());
+		
+		print_r($server->get_info());
+		print_r($server->get_players());
 	}
-	function update()
+/*	function update()
 	{
 		$this->gameq->get_serverlist();
 		echo 'done';
@@ -53,7 +71,7 @@ class Servers extends MX_Controller
 		$socket = @fsockopen($strHost, $strPort, $erno, $erst, 5);
 
 		@$this->load->driver('cache', array('adapter' => 'file'));
-		/*TODO:
+		/ *TODO:
 			find out why this causes the following error:
 				A PHP Error was encountered
 
@@ -64,7 +82,7 @@ class Servers extends MX_Controller
 				Filename: MX/Loader.php
 
 				Line Number: 165
-		*/
+		* /
 		
 		$cache =& get_instance()->cache;
 		
@@ -129,6 +147,6 @@ class Servers extends MX_Controller
 		$this->load->library('parser');
 		
 		return $this->parser->parse('servers/status_bar', array('serverlist_status' => $list), true);
-	}
+	}*/
 }
 

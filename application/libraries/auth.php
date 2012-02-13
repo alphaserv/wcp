@@ -42,7 +42,7 @@ class Auth
 	function login($username, $pass)
 	{
 		if ($this->checkbanned())
-			throw new excpetion('cannot login, you are banned');
+			throw new exception('cannot login, you are banned');
 			
 		$return = $this->CI->user_m->try_login($username, $pass);
 		if(!$return[0])

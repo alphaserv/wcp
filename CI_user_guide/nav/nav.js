@@ -152,5 +152,11 @@ function create_menu(basepath)
 		'<li><a href="'+base+'helpers/xml_helper.html">XML Helper</a></li>' +
 		'</ul>' +
 
+		'<h3>Third party guides</h3>' +
+		
+		'<ul>' +
+		'<li><a href="'+base+'form_guide/index.html">Form class</a></li>' +
+		'</ul>' +
+
 		'</td></tr></table>');
 }
