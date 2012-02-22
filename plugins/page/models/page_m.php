@@ -4,24 +4,23 @@ class page_not_found_exception extends Exception {}
 
 class page_m extends CI_Model
 {
-	function get_content($path)
+	function get_page($path)
 	{
 		$result = $this->db->query('
 			SELECT
 				id,
 				uri,
 				title,
-				min_priv,
-				revision,
 				content,
-				edit_priv,
 				date,
-				BIN(is_homepage) as is_homepage,
-				makeup
+				makeup,
+				BIN(public) as public
 			FROM
 				web_pages
 			WHERE
 				uri = ?
+			AND
+				public = b\'1\'
 			LIMIT
 				1;', array($path));
 		
@@ -31,55 +30,21 @@ class page_m extends CI_Model
 		if($result->num_rows() != 1)
 			throw new page_not_found_exception;
 		
-		return $result->first_row();
-	}
-
-	function gethomepage()
-	{
-		$result = $this->db->query('SELECT `id`, `uri`, `title`, `min_priv`, `revision`, `content`, `edit_priv`, `date`, BIN(`is_homepage`) as `is_homepage` FROM web_pages WHERE is_homepage = "1" LIMIT 1');
-		
-		if(!$result)
-			throw new exception('could not retrieve page from database, internal error');
-		
-		if($result->num_rows() != 1)
-			throw new exception('could not retrieve page from database, no homepage set');
-		
-		return $result->first_row();
+		return $this->checkrefer($result->first_row(), false);
 	}
 	
-	function getpage($title, $id = null)
+	function checkrefer(&$element, $relocate = true)
 	{
-		if(!$title && $id !== (int)$id)
-			throw new exception('getpage requires a title argument or an id argument');
-		
-		if($title)
-			$result = $this->db->query('SELECT `id`, `uri`, `title`, `min_priv`, `revision`, `content`, `edit_priv`, `date`, BIN(`is_homepage`) as `is_homepage` FROM web_pages WHERE title = ? ORDER BY revision DESC LIMIT 1', array($id));
+		$content = explode(':', $element->content);
+		if(isset($content[0]) && $content[0] == 'REFER' && isset($content[0]))
+			if($relocate)
+			{
+				redirect($content[1], 301);
+				exit;
+			}
+			else
+				return $this->get_page($content[1]);
 		else
-			$result = $this->db->query('SELECT `id`, `uri`, `title`, `min_priv`, `revision`, `content`, `edit_priv`, `date`, BIN(`is_homepage`) as `is_homepage` FROM web_pages WHERE id = ? LIMIT 1', array($id));
-
-		if(!$result)
-			throw new exception('could not retrieve page from database, internal error');
-		
-		if($result->num_rows() != 1)
-			throw new exception('could not retrieve page from database, no homepage set');
-		
-		return $result->first_row();
-	}
-	function search($data)
-	{
-		$data = '"%'.$this->db->escape_like_str($data).'%"';
-		
-		if(!$title && $id !== (int)$id)
-			throw new exception('getpage requires a title argument or an id argument');
-		
-		$result = $this->db->query('SELECT `id`, `uri`, `title`, `min_priv`, `revision`, `content`, `edit_priv`, `date`, BIN(`is_homepage`) as `is_homepage` FROM web_pages WHERE uri LIKE '.$data.' OR title LIKE '.$data.' OR content LIKE '.$data);
-		
-		if(!$result)
-			throw new exception('could not retrieve page from database, internal error');
-		
-		if($result->num_rows() != 1)
-			throw new exception('could not retrieve page from database, no homepage set');
-		
-		return $result->result_object();
+			return $element;
 	}
 }

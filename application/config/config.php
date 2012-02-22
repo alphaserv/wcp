@@ -394,5 +394,15 @@ $config['supported_languages'] = array(
 
 $config['activation_type'] = 3;
 
+$config['supported_types'] = array(
+	'json' => 'json',
+	'xml' => 'xml',
+	'xhtml' => 'html',
+	'html' => 'html'
+);
+
+$config['default_type'] = 'html';
+	
+
 /* End of file config.php */
 /* Location: ./application/config/config.php */

@@ -7,7 +7,7 @@ class Template
 	
 	private $body = array();
 	
-	private $theme = 'templatea';
+	private $theme = 'noclan';
 	private $layout = 'pc';
 	private $template_path;
 	
@@ -84,7 +84,7 @@ class Template
 			if(defined('OMG_DEBUG'))
 				echo 'adding partial ', $partial;
 			$data['template']['partial'][$partial] = $CI->parser->parse_string(file_get_contents($this->template_path.'partials/'.$partial.'.php'), $data, true);
-			$data['template_partial_'.$partial] = $data['template']['partial'][$partial];
+			$data['template_partial_'.$partial] =& $data['template']['partial'][$partial];
 		}
 
 		$data['main'] = $CI->parser->parse($view, $data, true);

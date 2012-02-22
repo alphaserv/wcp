@@ -1,27 +1,14 @@
 <?php defined('BASEPATH') or die('No direct script access allowed');
 
-class std_template_functions
-{
-	public $site = array(
-		'header' => array(
-			'title' => 'mynewtitle',
-			'full' => '<h1>SITENAME</h1>'
-		)
-	);
-
-}
-
 class MY_Parser extends CI_Parser {
 
 	private $CI;
-//	private $std;
 	
 	private $data;
 
 	function __construct()
 	{
 		$this->CI =& get_instance();
-		//$this->std = new tag_std();
 	}
 	
 	function parse($file, $data = array(), $return = false, $is_include = false)
@@ -37,10 +24,8 @@ class MY_Parser extends CI_Parser {
 
 		//get view variables
 		$data = array_merge($data, $this->CI->load->_ci_cached_vars);
-		$data = array_merge($data, array('std' => (array)new std_template_functions));
-
 		$this->data = array_merge($data, (array)$this->data);
-		
+
 		//load tag library
 		$this->CI->load->library('tags');
 		
@@ -77,7 +62,7 @@ class MY_Parser extends CI_Parser {
 
 			foreach($path['segments'] as $segment)
 			{
-				echo PHP_EOL.'segment: '.$segment.PHP_EOL;
+				if(defined('OMG_DEBUG')) echo PHP_EOL.'segment: '.$segment.PHP_EOL;
 				if(isset($data[$segment])) $data = $data[$segment];
 			}
 
