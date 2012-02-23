@@ -47,7 +47,7 @@ class gallery_m extends CI_Model
 	
 	function get_db_images()
 	{
-		return $this->db->query('
+		$result = $this->db->query('
 			SELECT
 				id,
 				name,
@@ -58,6 +58,53 @@ class gallery_m extends CI_Model
 			FROM
 				web_gallery
 			WHERE
-				public = b\'1\';')->result_object();
+				public = b\'1\';');
+			
+		if($result->num_rows() !== 1)
+			throw new exception('invalid id');
+		else
+			return $result->result_object();
+	}
+	
+	function get_db_image($id)
+	{
+		$result = $this->db->query('
+			SELECT
+				id,
+				name,
+				description,
+				rating,
+				date_added,
+				public
+			FROM
+				web_gallery
+			WHERE
+				id = ?;', array($id));
+		
+		if($result->num_rows() !== 1)
+			throw new exception('invalid id');
+		else
+			$result = $result->first_row();
+
+		if(ord($result->{'public'}) == 0)
+			throw new exception('trying to access non public page');
+		else
+			return $result;
+	}
+	
+	function submit_rate(&$form, $data)
+	{
+		if($data['way'] !== '+ 1' && $data['way'] !== '- 1')
+			$form->adderror('way', 'Unvalid way');
+		
+		$result = $this->db->query('
+			UPDATE
+				web_gallery
+			SET
+				rating = rating '.$data['way'].'
+			WHERE
+				id = ?', array($data['id']));
+		
+		return $result;
 	}
 }

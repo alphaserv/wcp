@@ -11,6 +11,7 @@ class Gallery extends MX_Controller
 		#$this->load->model('site_settings');
 		$this->load->helper('url');
 		$this->load->model('gallery_m');
+		$this->load->helper('quick_escape');
 		
 	}
 	
@@ -25,8 +26,8 @@ class Gallery extends MX_Controller
 			case 'html':
 				$this->template
 					->set_title('Galery overvieuw')
-					->add_head('<link href="'.base_url('static/css/caption.css').'" rel="stylesheet" type="text/css" />')
-					->build('gallery_view', array('images' => $this->gallery_m->get_db_images()));
+					#->add_head('<link href="'.base_url('static/css/caption.css').'" rel="stylesheet" type="text/css" />')
+					->build('gallery_view', array('images' => quick_html_escape($this->gallery_m->get_db_images())));
 				break;
 				
 			case 'json':
@@ -45,17 +46,21 @@ class Gallery extends MX_Controller
 	{
 		try
 		{
+			$img = $this->gallery_m->get_db_image($id);
 			switch($action)
 			{
 				default:
 				case 'vieuw':
 					$this->template
 						->set_title('image TITLE')
-						->build('single_img', array('img' => array( 
-							'url' => site_url('gallery/img/'.(int)$id.'/thumb/raw'),
-							'full_img' => site_url('gallery/img/'.(int)$id.'/full/raw'),
-							'title' => 'the IMG!',
-							'description' => 'my description'
+						->build('single_img', array('img' => array(
+							'id' => (int)$img->id,
+							'url' => site_url('gallery/img/'.(int)$img->id.'/thumb/raw'),
+							'full_img' => site_url('gallery/img/'.(int)$img->id.'/full/raw'),
+							'title' => htmlentities($img->name),
+							'description' => auto_link(htmlentities($img->description)),
+							'date_added' => htmlentities($img->date_added),
+							'rating' => (int)$img->rating
 						)));
 					break;
 					
@@ -72,7 +77,81 @@ class Gallery extends MX_Controller
 		{
 			print_r($e);
 		}
+	}
+	
+	function img_info($id)
+	{
+		try
+		{
+			$info = $this->gallery_m->get_db_image($id);
+			$info = (object)quick_html_escape($info);
+			switch($this->router->content_type)
+			{
+				case 'json':
+					$this->output->set_output(json_encode($info));
+				break;
+			
+				case 'xml':
+					$xml_img = new SimpleXMLElement('<images><image /></images>');
+				
+					$xml_img->image->id = $info->id;
+					$xml_img->image->name = $info->name;
+					$xml_img->image->description = $info->description;
+					$xml_img->image->rating = $info->rating;
+					$xml_img->image->date_added = $info->date_added;
+				
+					$this->output->set_output($xml_img->asXML());
+				break;
+			}
+		}
+		catch(Exception $e)
+		{
+			print_r($e);
+		}
+	
+	}
+	
+	function rate($id, $way)
+	{
+		try
+		{
+			
+			if($way == 'up')
+				$way_ = '+ 1';
+			elseif($way == 'down')
+				$way_ = '- 1';
+			else
+				throw new exception('unvalid way');
+			
+			$this->load->library('form');
+			
+			$this->form
+				->open('gallery/rate/'.(int)$id.'/'.rawurlencode($way))
+				->label('are you shure you want to change '.(int)$id.' '.htmlentities($way));
 		
-#		exit;
+			if(1 == (int)$this->site_settings->get_setting('rate_use_captcha', '0'))
+				$this->form->recaptcha('Please enter the captcha code');
+			
+			$this->form
+				->model('gallery_m', 'submit_rate', array('id' => (int)$id, 'way' => $way_))
+				->onsuccess('redirect', 'gallery/img/'.(int)$id)
+				->submit();
+			
+			
+			$data['form'] = $this->form->get(); // this returns the validated form as a string
+			$data['errors'] = $this->form->errors;  // this returns validation errors as a string
+			
+			$this->template
+				->set_title('confirm')
+				->add_head('<link href="'.base_url('static/form.css').'" rel="stylesheet" type="text/css" />')
+				->build('contact/contact_view', $data);
+			#$this->gallery_m->update_rate($id, ($way == 'up') ? '+ 1' : ($way == 'down') ? '- 1' : throw new excpetion('unvalid way')); #example of bad coding
+			
+			
+		}
+		catch(Exception $e)
+		{
+			print_r($e);
+		}
 	}
 }

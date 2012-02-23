@@ -44,12 +44,24 @@
 		<img src="{as:img:url}" alt="{as:img:title}" title="{as:img:title}"/>
 	</a>
 	<section>
-		<h1>{as:img:title}</h1>
-		<p>{as:img:description}</p>
+		<article>
+			<h1>{as:img:title}</h1>
+			<p>{as:img:description}</p>
+		</article>
 		<p>
-			<div class="rating" data-type="img" data-id="">
-				<a href="">like</a>
-				<a href="">DIE</a>
+			<details>
+				<ul>
+					<li>id: #{as:img:id}</li>
+					<li>name: {as:img:title}</li>
+					<li>url small	: <a href="{as:img:url}" >{as:img:url}</a></li>
+					<li>url large: <a href="{as:img:full_img}">{as:img:full_img}</a></li>
+					<li>date added: {as:img:date_added}</li>
+				</ul>
+			</details>
+			<div data-rating="{as:img:rating}" class="rating" data-type="img" data-id="">
+				Current rating: <span>{as:img:rating}</span>
+				<a href="{as:helpers:url:site url='gallery/rate/{as:img:id /}/up' /}">like</a>
+				<a href="{as:helpers:url:site url='gallery/rate/{as:img:id /}/down' /}">DIE</a>
 			</div>
 		</p>
 	</section>
