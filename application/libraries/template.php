@@ -5,11 +5,11 @@ class Template
 	private $title = '';
 	private $title_seperator = ' | ';
 	
-	private $body = array();
-	
 	private $theme = 'noclan';
 	private $layout = 'pc';
 	private $template_path;
+	
+	private $head = '';
 	
 	function __construct()
 	{
@@ -33,6 +33,11 @@ class Template
 		$this->title_seperator = $seperator;
 		return $this;
 	}
+	function add_head($data)
+	{
+		$this->head .= $data;
+		return $this;
+	}
 	
 	function set_title($title)
 	{
@@ -46,11 +51,6 @@ class Template
 		return $this;
 	}
 	
-	function add_body($viewdata, $tagdata = array())
-	{
-		$this->body[] = array($viewdata, $tagdata);
-		return $this;
-	}	
 /*	function build($data = array())
 	{
 		if (!is_array($data))
@@ -70,6 +70,8 @@ class Template
 
 		$CI =& get_instance();
 		
+		$data['title'] = $this->title;
+		$data['head'] = $this->head;
 		$data['template'] = (array)$this;
 
 		$this->template_path = FCPATH.'templates/'.$this->theme.'/';

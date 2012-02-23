@@ -165,8 +165,8 @@ $config['recaptcha_api_server']			= 'http://api.recaptcha.net';
 $config['recaptcha_api_secure_server']	= 'https://api-secure.recaptcha.net';
 $config['recaptcha_ssl']				= 'FALSE';
 $config['recaptcha_verify_server']		= 'api-verify.recaptcha.net';
-$config['recaptcha_key_public']			= '';	// Complete with your key
-$config['recaptcha_key_private']		= '';	// Complete with your key
+$config['recaptcha_key_public']			= '6Le8C84SAAAAAMc1aszmcHAkoNnoWjPa4YnEKGH_';	// Complete with your key
+$config['recaptcha_key_private']		= '6Le8C84SAAAAAImwEA1uG1pvsUGId62mNsajfw5s';	// Complete with your key
 $config['recaptcha_theme']				= 'white';
 $config['recaptcha_lang']				= 'en';	// Valid language codes on http://recaptcha.net/apidocs/captcha/client.html
 

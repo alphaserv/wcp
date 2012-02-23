@@ -202,9 +202,9 @@ TODO:
 					case 'main':
 						$menu_items = array(
 							array('/', 'HOME'),
-							array('/page/about', 'ETHICS'),
+							array('/about', 'ETHICS'),
 							#array('/forum', 'FORUM'),
-							array('/page/members', 'MEMBERS'),
+							array('/members', 'MEMBERS'),
 							array('/gallery/', 'GALLERY'),
 							array('/contact', 'CONTACT'),
 						);

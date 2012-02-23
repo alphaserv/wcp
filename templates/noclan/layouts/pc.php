@@ -29,7 +29,7 @@
 		<!-- /jquery -->
 
 		<!-- Fancy -->
-		<script src="{as:helpers:url:base url='static/fancybox/jquery.fancybox-1.3.4.pack.js'}" type="text/javascript"></script>
+		<script src="{as:helpers:url:base url='static/fancybox/jquery.fancybox-1.3.4.js'}" type="text/javascript"></script>
 		
 		<script type="text/javascript">
 			$(document).ready(function() {

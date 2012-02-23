@@ -26,6 +26,9 @@ class MY_Parser extends CI_Parser {
 		$data = array_merge($data, $this->CI->load->_ci_cached_vars);
 		$this->data = array_merge($data, (array)$this->data);
 
+		foreach($this->data as $key => $value)
+			if($value == null) $data[$key] = '';#bugfix replace null with ''
+		
 		//load tag library
 		$this->CI->load->library('tags');
 		
