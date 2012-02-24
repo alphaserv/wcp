@@ -15,6 +15,54 @@ class gallery_m extends CI_Model
 			return $file;
 	}
 	
+	function upload(&$form, $data)
+	{
+		try
+		{
+		
+			if(isset($data['public']) && $data['public'] == 1)
+				$public = 0;
+			else
+				$public = 1;
+
+			$result = $this->db->query('
+				INSERT INTO
+					web_gallery
+					(
+						id,
+						name,
+						description,
+						rating,
+						date_added,
+						public
+					)
+					VALUES
+					(
+						NULL,
+						?,
+						?,
+						0,
+						CURRENT_TIMESTAMP,
+						b\'?\'
+					);',array($data['title'], $data['description'], $public));
+		
+			if(!$result)
+				throw new exception('Could not store your comment in the database');
+
+		
+			$id = $this->db->insert_id();
+		
+			$this->save_img_file($id, $data['img']['full_path']);
+			unlink($data['img']['full_path']);
+		
+			$this->just_uploaded_id = $id;
+		}
+		catch(Exception $e)
+		{
+			$form->adderror('', $e->getMessage());
+		}
+	}
+	
 	function save_img_file($id, $img_path)
 	{
 
@@ -60,8 +108,8 @@ class gallery_m extends CI_Model
 			WHERE
 				public = b\'1\';');
 			
-		if($result->num_rows() !== 1)
-			throw new exception('invalid id');
+		if($result->num_rows() < 1)
+			throw new exception('could not find images');
 		else
 			return $result->result_object();
 	}

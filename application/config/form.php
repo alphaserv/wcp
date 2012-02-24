@@ -123,7 +123,7 @@ $config['defaults'] = array(
 		'onkeypress' => "this.style.borderColor='#000'"		// reset border color after error
 	),
 	'upload' => array(
-		'upload_path' => 'uploads',
+		'upload_path' => APPPATH.'uploads',
 		'allowed_types' => 'pdf|doc|jpg|gif|png'
 	),
 	'checkbox' => array(

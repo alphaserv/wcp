@@ -2,6 +2,3 @@
 	path = application/third_party/MC-Status
 	url = git://github.com/xPaw/PHP-Minecraft-Query.git
 
-[submodule "plugins/oauth"]
-	path = plugins/oauth
-	url = git://github.com/alexbilbie/CodeIgniter-OAuth-2.0-Server.git

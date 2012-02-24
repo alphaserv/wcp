@@ -115,7 +115,6 @@ class Gallery extends MX_Controller
 	{
 		try
 		{
-			
 			if($way == 'up')
 				$way_ = '+ 1';
 			elseif($way == 'down')
@@ -153,5 +152,49 @@ class Gallery extends MX_Controller
 		{
 			print_r($e);
 		}
+	}
+	
+	function upload()
+	{
+		try
+		{
+			$this->load->library('form');
+			
+			$this->form
+				->open('gallery/upload')
+				->text('title', 'the name of your picture', 'trim|required|min_length[6]|xss_clean')
+				->iupload('img', 'the image file', 'required')
+				->textarea('description', 'the description of the file', 'trim')
+				->checkbox ('public', 1, 'only visible for me');
+		
+			if(1 == (int)$this->site_settings->get_setting('rate_upload_captcha', '1'))
+				$this->form->recaptcha('Please enter the captcha code');
+			
+			$this->form
+				->model('gallery_m', 'upload')
+				->onsuccess(array($this, '_lastaddedimg'))
+				->submit();
+			
+			
+			$data['form'] = $this->form->get(); // this returns the validated form as a string
+			$data['errors'] = $this->form->errors;  // this returns validation errors as a string
+			
+			$this->template
+				->set_title('confirm')
+				->add_head('<link href="'.base_url('static/form.css').'" rel="stylesheet" type="text/css" />')
+				->build('contact/contact_view', $data);
+			#$this->gallery_m->update_rate($id, ($way == 'up') ? '+ 1' : ($way == 'down') ? '- 1' : throw new excpetion('unvalid way')); #example of bad coding
+			
+			
+		}
+		catch(Exception $e)
+		{
+			print_r($e);
+		}	
+	}
+	
+	function _lastaddedimg()
+	{
+		redirect('gallery/img/'.(int)$this->gallery_m->just_uploaded_id);
 	}
 }
