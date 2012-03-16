@@ -28,18 +28,6 @@ class User_m extends CI_Model
 		
 		$this->load->model('clan_m');
 	}
-	
-	public function get_acces_to(string $actionname, int $user_id)
-	{
-		$return |= Auth::access_read;
-		$return |= Auth::access_write;
-		$return |= Auth::access_delete;
-		$return |= Auth::access_create;
-		$return |= Auth::access_manage;
-		
-		return $return;
-	}
-	
 
 	public function try_login ($username, $password)
 	{
@@ -106,7 +94,7 @@ class User_m extends CI_Model
 		return (bool) $this->db->query($sql, array($change_to, $key));
 	}
 	
-	public function activation_status(string $name)
+	public function activation_status($name)
 	{
 		$result = $this->db->query('SELECT 
 										user_activated,
@@ -142,13 +130,13 @@ class User_m extends CI_Model
 										ingame_pass,
 										user_activated,
 										admin_activated,
-										priv'.#TODO:add key field
+										priv '.#TODO:add key field
 									'FROM
 										web_activation
 									WHERE
 										user_activated = 1
 									AND
-										admin_activated = 1;
+										admin_activated = 1
 									LIMIT '.(int)$max);
 		
 		#the query failed
@@ -158,13 +146,14 @@ class User_m extends CI_Model
 		#no results so nothing to do
 		if($result->num_rows() < 1)
 			return true;
-		
+
 		foreach ($result->result() as $row)
 		{
+
 			#safe transactions
 			$this->db->trans_start();
-			
-				$this->db->query('INSERT INTO `users` (`name`, `email`, `pass`, `priv`) VALUES (?, ?, ?, ?);', array($row->username, $row->email, $row->ingame_pass, $row->priv));
+				
+				$this->db->query('INSERT INTO `users` (`name`, `email`, `pass`, `priv`) VALUES (?, ?, ?, ?);', array($row->username, $row->email, $row->ingame_pass, $row->priv));		
 
 				#get new user id
 				$id = $this->db->insert_id();
@@ -176,7 +165,8 @@ class User_m extends CI_Model
 				#extra, probebly unneeded check
 				if ($this->db->trans_status() === TRUE)
 				{
-					$this->db->query('DELETE FROM web_activation WHERE id = ?', array($row['id']));
+					echo 'delete';
+					$this->db->query('DELETE FROM web_activation WHERE id = ?', array($row->id));
 					$this->db->trans_commit();
 				}
 				else
@@ -324,9 +314,23 @@ class User_m extends CI_Model
 		return array('code' => $code, 'activation_type' => $activation_type);
 	}
 	
+	function find_group($name)
+	{
+		return $this->db->query('
+			SELECT
+				group_id AS id,
+				name
+			
+			FROM
+				groups
+			
+			WHERE
+				name = ?
+		', array($name))->first_row();
+	}
 	function add_to_group($group_id, $user_id)
 	{
-		$this->db->query('INSERT INTO groups_users (id, group_id, user_id) VALUES (NULL, ?, ?);', array($group_id, $user_id);
+		$this->db->query('INSERT INTO groups_users (group_id, user_id) VALUES (?, ?);', array($group_id, $user_id));
 	}
 	
 	function create_group($name)
@@ -357,13 +361,15 @@ class User_m extends CI_Model
 	}
 	
 	
-	function user_access($user_id)
+	function user_access_to($user_id, $rule_name, $on = -1)
 	{
-		return $this->db->query('
+		$result = $this->db->query('
 			SELECT
 				rules_groups.rule_id AS id,
 				rules.name AS name,
-				rules.on_id AS on_id
+				rules.on AS on_id,
+				rules_groups.order,
+				rules_groups.type AS allow
 			
 			FROM
 				rules_groups,
@@ -376,7 +382,85 @@ class User_m extends CI_Model
 				rules_groups.group_id = groups_users.group_id
 			
 			AND
-				rules_groups.rule_id = rules.id')->result_object();
+				rules_groups.rule_id = rules.id
+			
+			AND
+				rules.name = ?
+			
+			AND
+				rules.on = ?
+			ORDER BY
+				rules_groups.order
+			', array($user_id, $rule_name, $on))->first_row();
+		
+		$user_override = $this->db->query('
+			SELECT
+				rules_users.rule_id AS id,
+				rules.name AS name,
+				rules.on AS on_id,
+				rules_users.type AS allow
+			
+			FROM
+				rules_users,
+				rules
+			
+			WHERE
+				rules_users.user_id = ?
+			
+			AND
+				rules_users.rule_id = rules.id
+			
+			AND
+				rules.name = ?
+			
+			AND
+				rules.on = ?
+		', array($id, $rule_name, $on))->result_object();
+		
+		#no num_rows
+		foreach($user_override as $row)
+			$result = $user_override;
+		
+		return (bool)$result->allow;
+	}
+	
+	function get_user($id)
+	{
+		return $this->db->query('
+			SELECT
+				id,
+				name,
+				email,
+				pass
+			FROM
+				users
+			WHERE
+				id = ?', array($id))->first_row();
+				
+	}
+	
+	function get_names($id)
+	{
+		return $this->db->query('
+			SELECT
+				id,
+				name
+			FROM
+				names
+			WHERE
+				user_id = ?', array($id))->result_object();
+	}
+	
+	function get_name($id)
+	{
+		return $this->db->query('
+			SELECT
+				id,
+				name
+			FROM
+				names
+			WHERE
+				id = ?', array($id))->first_row();
 	}
 }
 

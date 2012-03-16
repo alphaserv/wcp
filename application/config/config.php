@@ -368,7 +368,7 @@ $config['proxy_ips'] = '';
 
 $config['modules_locations'] = array(
 	APPPATH.'modules/' => '../modules/',
-	dirname(APPPATH).'/plugins/' => '../../plugins/',
+	dirname(APPPATH).'/modules/' => '../../modules/',
 );
 
 /*

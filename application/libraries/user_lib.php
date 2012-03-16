@@ -7,9 +7,6 @@ class user_
 	
 	private $logged_in;
 	
-	private $username;
-	private $email;
-	
 	private $cached_settings;
 	private $cached_access;
 	
@@ -35,12 +32,12 @@ class user_
 		return (bool)$this->logged_in;
 	}
 	
-	function get_acces_to(string $name)
+	function get_acces_to($name, $on = -1)
 	{
 		static $CI;
 		if(!isset($CI)) $CI =& get_instance();
-		#decbin($name)
-		return $CI->user_m->user_access($this->user_id, $name);
+
+		return $CI->user_m->user_access_to($this->user_id, $name, $on);
 	}
 	
 	function get_setting(string $name)

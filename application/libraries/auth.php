@@ -4,12 +4,6 @@ class Auth
 {
 	private $CI;
 	
-	const access_read = 1;
-	const access_write = 2;
-	const access_delete = 4;
-	const access_create = 8;
-	const access_manage = 16;
-	
 	function __construct()
 	{
 		$this->CI =& get_instance();
@@ -62,9 +56,6 @@ class Auth
 	}
 	function register ($email, $pass, $as_pass, $username)
 	{
-		$this->CI->config->load('email');
-		$mail_config = $GLOBALS['mail_config'];
-		print_r($mail_config);
 		$priv = (int)$this->CI->config->item('default_priv');
 		$activation = (int)$this->CI->config->item('activation_type');
 		
@@ -74,53 +65,53 @@ class Auth
 
 		$this->CI->db->trans_status();
 		if($res['activation_type'] == user_m::ACTIVATION_TYPE_EMAIL || $res['activation_type'] == user_m::ACTIVATION_TYPE_BOTH)
-		{
-			$this->CI->load->library('email');
-			$this->CI->email->initialize($mail_config);
-
-			#clear everything to make shure no conflicts will occur
-			$this->CI->email->clear(true);
-
-			#support for noobish os (microsucks winsucks)
-			$this->CI->email->set_newline("\r\n");
-
-			#set where the email is from
-			$this->CI->email->from($this->CI->config->item('mail_from'), $this->CI->config->item('mail_from_name'));
-		
-			#set the reply to adress if not the same
-			if ($this->CI->config->item('mail_drom') != $this->CI->config->item('mail_reply_to'))
-				$this->CI->email->reply_to($this->CI->config->item('mail_reply_to'), $this->CI->config->item('mail_reply_to_name'));
-		
-			#set where to send the email to
-			$this->CI->email->to($email);
-		
-			#set the subject of the message
-			$this->CI->email->subject($this->CI->config->item('mail_activation_subject'));
-		
-			#load the message from an view
-			$this->CI->email->message($this->CI->load->view('mail/activation', array( 'key' => $res['code']), true));
-		
-			#load an alternative message for email clients wich don't support html formated email
-			$this->CI->email->set_alt_message($this->CI->load->view('mail/alt_activation', array( 'key' => $res['code']), true));
-		
-			#send the email
-			if(!$this->CI->email->send())
-			{
-				$this->CI->db->trans_rollback();
-				log_error('error', $this->CI->email->print_debugger());
-				throw new exception('could not mail');
-			}	
-			
-			#clear up
-			$this->CI->email->clear(true);
-
-		}
-		else
-			echo 'no activation is needed';
+			$this->send_activation_email($email, $res['key']);
 		
 		$this->CI->db->trans_commit();#commit queries here
 		return true;
 	}
+	
+	function send_activation_email($email, $key)
+	{
+		$this->CI->load->library('email');
+
+		#clear everything to make shure no conflicts will occur
+		$this->CI->email->clear(true);
+
+		#support for noobish os (microsucks winsucks)
+		$this->CI->email->set_newline("\r\n");
+
+		#set where the email is from
+		$this->CI->email->from($this->CI->config->item('mail_from'), $this->CI->config->item('mail_from_name'));
+		
+		#set the reply to adress if not the same
+		if ($this->CI->config->item('mail_drom') != $this->CI->config->item('mail_reply_to'))
+			$this->CI->email->reply_to($this->CI->config->item('mail_reply_to'), $this->CI->config->item('mail_reply_to_name'));
+		
+		#set where to send the email to
+		$this->CI->email->to($email);
+		
+		#set the subject of the message
+		$this->CI->email->subject($this->CI->config->item('mail_activation_subject'));
+		
+		#load the message from an view
+		$this->CI->email->message($this->CI->load->view('mail/activation', array( 'key' => $key), true));
+		
+		#load an alternative message for email clients wich don't support html formated email
+		$this->CI->email->set_alt_message($this->CI->load->view('mail/alt_activation', array( 'key' => $key), true));
+		
+		#send the email
+		if(!$this->CI->email->send())
+		{
+			$this->CI->db->trans_rollback();
+			log_error('error', $this->CI->email->print_debugger());
+			throw new exception('could not mail');
+		}	
+		
+		return true;
+	
+	}
+	
 	function activate ($key)
 	{
 		$a = $this->CI->user_m->activate($key);

@@ -1,5 +1,11 @@
 <?php
 
+if(!file_exists(dirname(__file__).'/config.php') || file_exists(dirname(__file__).'/install'))
+{
+	header('Location: install/index.php');
+	die('install please!');
+}
+
 /*
  *---------------------------------------------------------------
  * APPLICATION ENVIRONMENT
@@ -105,28 +111,11 @@ if (defined('ENVIRONMENT'))
 	// $routing['function']	= '';
 
 
-/*
- * -------------------------------------------------------------------
- *  CUSTOM CONFIG VALUES
- * -------------------------------------------------------------------
- *
- * The $assign_to_config array below will be passed dynamically to the
- * config class when initialized. This allows you to set custom config
- * items or override any default config values found in the config.php file.
- * This can be handy as it permits you to share one application between
- * multiple front controller files, with each file containing different
- * config values.
- *
- * Un-comment the $assign_to_config array below to use this feature
- *
- */
-	// $assign_to_config['name_of_config_item'] = 'value of config item';
-
-
-
 // --------------------------------------------------------------------
 // END OF USER CONFIGURABLE SETTINGS.  DO NOT EDIT BELOW THIS LINE
 // --------------------------------------------------------------------
+
+require dirname(__file__).'/config.php';
 
 /*
  * ---------------------------------------------------------------

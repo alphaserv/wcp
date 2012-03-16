@@ -2,9 +2,13 @@
 
 class Clan_m
 {
+	function fetch_clantags()
+	{
+		return $this->db->query('SELECT tag FROM clans')->result_object();
+	}
 	function clan_exists ($clantag)
 	{
-		$result = $this->db->query('SELECT `tag` FROM `clans` WHERE `tag` = ?', array($clantag));
+		$result = $this->db->query('SELECT tag FROM clans WHERE tag = ?', array($clantag));
 		
 		if(!$result)
 			throw new exception('could not receive clan list.');
@@ -18,9 +22,15 @@ class Clan_m
 		return false;
 	}
 	
-	function reservedclantag()
+	function reservedclantag($name)
 	{
 		#check if a name uses a reserved clantag
 		#TODO
+		
+		foreach($this->fetch_clantags() as $clan)
+			if(preg_match('#'.$clan->tag.'#', $name))
+				return true;
+	
+		return false;
 	}
 }

@@ -1,46 +1,38 @@
 <?php
 class Language
 {
-	static $user_lang;
-	
-	function __destruct()
-	{
-		if(defined('OMG_DEBUG'))
-		{
-			$CI =& get_instance();
-			echo $CI->session->userdata('language_code');
-			print_r($CI->config->item('lang_handler'));
-			print_r($CI->config->item('load_lang_handler'));
-		}
-	}
 	function __construct()
 	{
-   		$CI =& get_instance();
-		$CI->load->library('session');
-		$supported = $CI->config->item('supported_languages');
+		$this->CI =& get_instance();
+		$this->CI->load->database();
+    }
+    function detect_language()
+    {
+		$this->CI->load->database();
+		$this->CI->load->library('session');
 
 
 		#enable $_GET
-		parse_str($CI->input->server('QUERY_STRING'), $_GET);
+		parse_str($this->CI->input->server('QUERY_STRING'), $_GET);
 		
-		if(($lang = $CI->session->userdata('language_code')) === false || isset($_GET['changelanguage']))
+		if(($lang = $this->CI->session->userdata('language_code')) === false || isset($_GET['changelanguage']) || isset($_GET['lang']))
 		{
 			#try to detect language
-			
+
 			#lang in url as ?lang=*LANGUAGE*
 			if(isset($_GET['lang']) && !empty($_GET['lang']))
 				$lang = substr($_GET['lang'], 0, 2);
 			
 			#language posted in a form
-			elseif(($lang = $CI->input->post('lang')) !== false)
+			elseif(($lang = $this->CI->input->post('lang')) !== false)
 				$lang = substr($lang, 0, 2);
 			
 			#language in a cookie
-			elseif(($lang = $CI->input->cookie('lang')) !== false)
+			elseif(($lang = $this->CI->input->cookie('lang')) !== false)
 				$lang = substr($lang, 0, 2);
 			
 			#no other options, check headers
-			elseif(($lang = $CI->input->server('HTTP_ACCEPT_LANGUAGE')) !== false)
+			elseif(($lang = $this->CI->input->server('HTTP_ACCEPT_LANGUAGE')) !== false)
 			{
 				$accept = explode(',', $lang);
 				$ok = false;
@@ -48,7 +40,7 @@ class Language
 				{
 					$lang = substr($lang, 0, 2);
 
-					// Check its in the array. If so, break the loop, we have one!
+					#Check its in the array. If so, break the loop, we have one!
 					if(isset($supported[$lang]))
 					{
 						$ok = true;
@@ -60,60 +52,96 @@ class Language
     		}
     		else
     			$lang = $this->lang_from_geoip();
-    			
-    		if(!$lang || empty($lang) || !isset($supported[$lang]))
-    			$lang = $CI->config->item('default_language');
-    		
-    		$CI->session->set_userdata('language_code', $lang);
+
+   			
+    		if(!$lang || empty($lang) || !$this->is_supported_language($lang))
+    			$lang = $this->CI->config->item('default_language');
+
+    		$this->CI->session->set_userdata('language_code', $lang);
     	}
     	
-    	#create lang object TODO:make this more simple to use
+    	return $lang;
+    }
+    
+    function is_supported_language($code)
+    {
+    	#TODO: database
+		static $supported;
+		
+		if(!isset($supported))
+			$supported = $this->CI->config->item('supported_languages');
+		
+		return isset($supported[$code]);
+    }
+    
+    function get_lang_code()
+    {
+    	static $language;
     	
-    	$function = function($key, $forcelang = null, $nodboverride = false) use($lang, $supported)
-    	{
-    		$CI =& get_instance();
+    	if(!isset($language))
+    		$language = $this->detect_language();
     		
-    		$clang = ($forcelang == null) ? $lang : $forcelang;
-			
-			$string = $CI->lang->line($key);
-			
-			if($supported[$clang]['use_database'] && !$nodboverride)
-			{
-				#cache!!!!!
-				$CI->db->cache_on();
-					
-					$result = $CI->db->query('SELECT value FROM web_lang WHERE name = ? AND language = ?', array($key, $clang));
-						
-					if(!$result)
-						throw new exception('dberror on language');
-					elseif($result->num_rows() == 1)
-					{
-						$row = $result->row();
-						$string = $row->value;
-					}
+    	return $language;
+    }
+    
+    function get_string($key, $default, $noinstall = false)
+    {
+    	static $strings;
+    	$lang = $this->get_lang_code();
 
-				$CI->db->cache_off();
-			}
+    	if(!isset($strings))
+		{
+			$result = $this->CI->db->query('SELECT name, value FROM web_lang WHERE language = ?', array($lang))->result_object();
+
+			foreach($result as $row)
+				$strings[$row->name] = $row->value;
+		}
+		
+		if(!isset($strings[$key]))
+		{
+			$result = $this->CI->db->query('SELECT name, value FROM web_lang WHERE name = ? AND language = "en"', array($key));
 			
-			if(isset($supported[$clang]['string'][$key]))
-				$string = $supported[$clang]['string'][$key];
-				
-			return trim($string);    	
-    	};
-    	    	
-    	$CI->config->set_item('lang_handler', $function);
-    	
-    	$load_function = function($file) use($lang, $supported)
-    	{
-    		return $this->lang->load($file, ((isset($supported[$lang]['folder_name'])) ? $supported[$lang]['folder_name'] : $lang));
-    	};
-    	
-    	$CI->config->set_item('load_lang_handler', $load_function);
+			if($result->num_rows() < 1 && !$noinstall)
+			{
+				$result = $this->CI->db->query('
+					INSERT INTO
+						web_lang
+						(
+							name,
+							value,
+							language
+						)
+					VALUES
+						(
+							?,
+							?,
+							?
+						);', array($key, $default, 'en'));
+				return $default;
+			}
+			elseif($result->num_rows() > 0)
+			{
+				return $result->first_row()->value;
+			}
+			else
+				return false;
+		}
+		else
+			return $strings[$key];
     }
     
 	function lang_from_geoip()
 	{
-		#TODO: implement
-		return 'en';
+		$this->CI->load->model->geoip_m();
+		return $this->CI->geoip_m->ip_to_country_code();
 	}
+}
+
+function lang_string($name, $default)
+{
+	static $CI;
+	if(!isset($CI))
+		$CI =& get_instance();
+	
+	return $CI->language->get_string($name, $default);
 }

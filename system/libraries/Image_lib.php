@@ -600,7 +600,7 @@ class CI_Image_lib {
 
 		$retval = 1;
 
-		@exec($cmd, $output, $retval);
+		echo @exec($cmd, $output, $retval);
 
 		//	Did it work?
 		if ($retval > 0)
