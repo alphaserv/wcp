@@ -45,15 +45,19 @@ class User extends MX_Controller
 				->text('ingame_pass', 'your ingame password', 'trim|required|min_length[3]', $user->pass)
 				
 				->fieldset('Change your password')
-				->password('pass', 'your password', 'trim|required')
-				->password('pass_retype', 'retype your password', 'trim|required|matches[pass]')
+				->password('pass', 'your password', 'trim')
+				->password('pass_retype', 'retype your password', 'trim|matches[pass]')
 			
 			->submit()
+			
+			->model('user_form_m', 'user_data', array('user' => $user))
+			->onsuccess('redirect', 'user/settings?success=data')
 			
 			->fieldset('ingame names');
 			
 			foreach($this->user_m->get_names($uid) as $name)
 				$this->form->html('<div>'.$name->name.' '. anchor('user/nickname/update/'.$name->id, 'Change'). ' '. anchor('user/nickname/delete/'.$name->id, 'Delete').'</div>');
+			$this->form->html('<div>'.anchor('user/nickname/new/0', 'new nickname'));
 
 
 		$data['form'] = $this->form->get();
@@ -68,15 +72,57 @@ class User extends MX_Controller
 	
 	function nickname($action, $id)
 	{
-		$name = $this->user_m->get_name($id);
+		$id = (int) $id;
+
 	
-		if($action == 'delete')
+		switch($action)
 		{
-			$this->form
-				->open($this->router->uri->uri_string)
-				->text('alphaserv_username', 'your <strong class="uppercase">full</strong> ingame name', 'trim|required|min_length[2]|max_length[12]|xss_clean', $name->name)
+			case 'delete':
+				$name = $this->user_m->get_name($id);
+				
+				$this->form
+					->open('user/nickname/delete/'.$id)
+					->html('<div> Are you shure that you want to delete your beloved username "'.htmlentities($name->name).'" ?</div>')
+					
+					->submit()
+					
+					->model('user_form_m', 'delete_name');
+				break;
+			
+			case 'new':
+				
+				$this->form
+					->open('user/nickname/new/1')
+					->text('nickname', 'your <strong class="uppercase">full</strong> ingame name', 'trim|required|min_length[2]|max_length[12]|xss_clean')
+					->submit()
+					
+					->model('user_form_m', 'new_name');
+			
+				break;
+			
+			case 'update':
+				$name = $this->user_m->get_name($id);
+
+				$this->form
+					->open('user/nickname/update/'.$id)
+					->text('nickname', 'your <strong class="uppercase">full</strong> ingame name', 'trim|required|min_length[2]|max_length[12]|xss_clean', $name->name)
+					->submit()
+					
+				->model('user_form_m', 'update_name');
+				break;
 		
 		}
+		
+		
+		$this->form->onsuccess('redirect', 'user/settings?success='.$action);
+		
+		$data['form'] = $this->form->get();
+		$data['errors'] = $this->form->errors;
+		
+		$this->template
+			->set_title('Login')
+			->add_head('<link href="'.base_url('static/form.css').'" rel="stylesheet" type="text/css" />')
+			->build('contact/contact_view', $data);
 	}
 	
 	function login()
@@ -92,7 +138,7 @@ class User extends MX_Controller
 		
 		$this->form
 			->model('user_form_m', 'login')
-			->onsuccess('redirect', '/')
+			->onsuccess('redirect', 'user/settings')
 			->submit();
 
 		$data['form'] = $this->form->get();

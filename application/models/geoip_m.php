@@ -13,7 +13,7 @@ class Geoip_m extends CI_Model
 		
 		if($row = $query->row())
 		{
-			return $row->country_code
+			return $row->country_code;
 		}
 	}
 }

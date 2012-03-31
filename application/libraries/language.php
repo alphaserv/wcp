@@ -132,8 +132,9 @@ class Language
     
 	function lang_from_geoip()
 	{
-		$this->CI->load->model->geoip_m();
-		return $this->CI->geoip_m->ip_to_country_code();
+		#$this->CI->load->model('geoip_m');
+		#return $this->CI->geoip_m->ip_to_country_code();
+		return 'en';
 	}
 }
 

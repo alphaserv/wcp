@@ -1,10 +1,10 @@
 <?php
 
-if(!file_exists(dirname(__file__).'/config.php') || file_exists(dirname(__file__).'/install'))
+/*if(!file_exists(dirname(__file__).'/config.php') || file_exists(dirname(__file__).'/install'))
 {
 	header('Location: install/index.php');
 	die('install please!');
-}
+}*/
 
 /*
  *---------------------------------------------------------------

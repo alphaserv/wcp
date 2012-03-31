@@ -165,7 +165,6 @@ class User_m extends CI_Model
 				#extra, probebly unneeded check
 				if ($this->db->trans_status() === TRUE)
 				{
-					echo 'delete';
 					$this->db->query('DELETE FROM web_activation WHERE id = ?', array($row->id));
 					$this->db->trans_commit();
 				}

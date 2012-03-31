@@ -21,8 +21,6 @@ class Userdata_m extends CI_Model
 		
 		if (!$result)
 			throw new exception('could not retreive user from database.');
-		elseif($result->num_rows() != 1)
-			throw new exception('could not query database'); #TODO: make this an user exception?
 			
 		if($variable !== null)
 			return $result->row();

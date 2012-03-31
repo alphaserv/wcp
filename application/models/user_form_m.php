@@ -9,6 +9,7 @@ class User_form_m extends CI_Model
 		$this->load->database();
 		
 		$this->load->model('user_m');
+		$this->load->model('clan_m');
 	}
 
 	public function login (&$form, $data)
@@ -197,6 +198,7 @@ class User_form_m extends CI_Model
 			$this->user_m->add_to_group($group_id, $id);
 		}
 	}
+	
 	function activate(&$form, $data)
 	{
 		try
@@ -210,5 +212,128 @@ class User_form_m extends CI_Model
 		}
 	}
 	
-
+	function delete_name(&$form, $data)
+	{
+		$res = $this->db->query('
+			DELETE FROM
+				names
+			WHERE
+				id = ?', array($this->uri->segments[4]));
+		
+		if(!$res)
+			$form->add_error('submit', 'Could not delete name!');
+		
+	}
+	
+	function update_name(&$form, $data)
+	{
+		$res = $this->db->query('
+			UPDATE
+				names
+			SET
+				name = ?
+			WHERE
+				id = ?', array($data['nickname'], $this->uri->segments[4]));
+		
+		if(!$res)
+			$form->add_error('submit', 'Could not update name!');
+		
+	}
+	
+	function new_name(&$form, $data)
+	{
+		$clan_id = $this->clan_m->has_reserved_clantag($data['nickname']);
+		$uid = $this->auth->get_current_user()->get_user_id();
+		
+		if($clan_id != -1 && !$this->clan_m->is_in_clan($uid, $clan_id))
+			$form->add_error('nickname', 'Your name contains a reserved clantag, please change your name.');
+			
+		elseif($this->db->query('SELECT id FROM names WHERE name = ?', array($data['nickname']))->num_rows() > 0)
+			$form->add_error('nickname', 'Sorry, your name is already claimed. If you believe this is a faker, please contact us.');
+		
+		else
+		{
+			$this->db->trans_begin();
+		
+			$this->db->query('
+				INSERT INTO
+					names
+					(
+						name,
+						user_id
+					)
+				VALUES
+					(
+						?,
+						?
+					)
+				', array($data['nickname'], $uid));
+				
+		
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				$form->add_error('nickname', 'could not save name in the database, please try again.');
+			}
+			else
+			{
+				$this->db->trans_commit();
+			}
+		}
+		
+		unset ($clan_id);
+		unset ($uid);
+		
+		
+	}
+	
+	function user_data(&$form, $data)
+	{
+		$id = $this->auth->get_current_user()->get_user_id();
+		
+		$namechanged = $data['user']->name != $data['username'];
+		
+		if($namechanged && $this->db->query('SELECT name FROM users WHERE name = ?', array($data['username']))->num_rows() > 0)
+			$form->add_error('username', 'That username already exists! Please pick another one.');
+		else
+		{
+		
+			$this->db->trans_begin();
+		
+				$this->db->query('
+					UPDATE
+						users
+					SET
+						name = ?,
+						email = ?,
+						pass = ?
+					WHERE
+						id = ?
+		
+				', array($data['username'], $data['email'], $data['ingame_pass'], (int)$id));
+		
+				if(isset($data['pass']) && $data['pass'] != '')
+				{
+					$this->load->library('hash');
+					$this->db->query('
+						UPDATE
+							web_users
+						SET
+							pass = ?
+						WHERE
+							user_id = ?
+					', array($this->hash->hash($data['pass']), $id));
+				}
+			
+			if($this->db->trans_status() == false)
+			{
+				$this->db->trans_rollback();
+				$form->add_error('username', 'Could not update settings, please try again.');
+			}
+			else
+				$this->db->trans_commit();
+		
+			unset ($id);
+		}
+	}
 }

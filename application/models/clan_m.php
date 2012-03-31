@@ -1,10 +1,10 @@
 <?php
 
-class Clan_m
+class Clan_m extends CI_Model
 {
 	function fetch_clantags()
 	{
-		return $this->db->query('SELECT tag FROM clans')->result_object();
+		return $this->db->query('SELECT id, tag FROM clans')->result_object();
 	}
 	function clan_exists ($clantag)
 	{
@@ -25,12 +25,22 @@ class Clan_m
 	function reservedclantag($name)
 	{
 		#check if a name uses a reserved clantag
-		#TODO
 		
 		foreach($this->fetch_clantags() as $clan)
 			if(preg_match('#'.$clan->tag.'#', $name))
-				return true;
+				return $clan->id;
 	
-		return false;
+		return -1;
+	}
+	
+	function has_reserved_clantag($name)
+	{
+		return $this->reservedclantag($name);
+	}
+	
+	function is_in_clan($user_id, $clan_id)
+	{
+		#TODO: create
+		return true;
 	}
 }
