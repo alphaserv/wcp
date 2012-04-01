@@ -1,11 +1,19 @@
 <?php
 
-class Name_widget extends AS\Widget
+class Name_widget extends alphaserv\Widget
 {
-	private $_settings;
-	
-	function call($settings)
+	function call($arguments)
 	{
-		
+		return 'EHm NO';
+	}
+	
+	function install()
+	{
+		return -1;
+	}
+	
+	function uninstall()
+	{
+		return -1;
 	}
 }

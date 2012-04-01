@@ -26,13 +26,10 @@ class Stats extends MX_Controller
 				
 				stats_totals.frags,
 				stats_totals.deaths,
-				stats_totals.suicides,
-				stats_totals.misses,
-				stats_totals.shots,
-				stats_totals.hits_made,
-				stats_totals.hits_get,
+				stats_totals.frags/stats_totals.deaths AS kpd,
+				stats_totals.hits_made/stats_totals.shots*100 AS acc,
 				stats_totals.tk_made,
-				stats_totals.tk_get,
+				
 				stats_totals.flags_returned,
 				stats_totals.flags_stolen,
 				stats_totals.flags_gone,
@@ -49,7 +46,7 @@ class Stats extends MX_Controller
 				stats_totals.frags
 			DESC');
 	
-		$this->table->set_heading(array('name', 'frags', 'deaths', 'suicides', 'misses', 'shots', 'hits_made', 'hits_get', 'tk_made', 'tk_get', 'flags_returned', 'flags_Get', 'flags_gone', 'flags_scored', 'total_scored'));
+		$this->table->set_heading(array('name', 'frags', 'deaths', 'kpd', 'acc', 'tk', 'returned', 'stolen', 'gone', 'scored', 'total_scored'));
 	
 		$this->template
 			->set_title('Stats - totals')

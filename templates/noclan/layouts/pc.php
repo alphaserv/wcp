@@ -139,6 +139,8 @@
 				<div>
 					{as:template:partial:sidebar}
 				</div>
+				
+				{as:widget:noclan_sidebar}
 			</div><!-- /"sidepanel" -->
 
 			<div id="main">

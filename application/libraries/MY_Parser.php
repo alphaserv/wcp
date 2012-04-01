@@ -6,6 +6,16 @@ class MY_Parser extends CI_Parser {
 	
 	private $data;
 
+	function add_data($data)
+	{
+		if (!is_array($data))
+			$data = (array) $data;
+		
+		$this->data = array_merge($data, (array)$this->data);
+		
+		return $this;
+	}
+
 	function __construct()
 	{
 		$this->CI =& get_instance();
@@ -65,12 +75,54 @@ class MY_Parser extends CI_Parser {
 
 			foreach($path['segments'] as $segment)
 			{
-				if(defined('OMG_DEBUG')) echo PHP_EOL.'segment: '.$segment.PHP_EOL;
-				if(isset($data[$segment])) $data = $data[$segment];
+				if(defined('OMG_DEBUG')) 
+					echo PHP_EOL.'segment: '.$segment.PHP_EOL;
+					
+				if(array_key_exists($segment, $data))
+					if(end($path['segments']) != $segment)
+						$data = (array)$data[$segment];
+					elseif(isset($path['attributes']['type']))
+						switch($path['attributes']['type'])
+						{
+							case 'isempty':
+								$data = empty($data[$segment]);
+							break;
+							
+							case 'bool':
+								$data = (bool)$data[$segment];
+							break;
+
+							case 'int':
+								$data = (int)$data[$segment];
+							break;
+						
+							default:
+							case 'string':
+								$data = (string)$data[$segment];
+							break;
+						}
+					else
+						$data = $data[$segment];
+					
+				elseif(defined('OMG_DEBUG'))
+					echo PHP_EOL.$segment.' not found! '.print_r($data, true).' see: '.$data[$segment].'!';
 			}
 
 			return (string)$data;
 
+		}
+		elseif($path['segments'][0] == 'widget')
+		{
+			$this->CI->load->library('widgets');
+			
+			if(isset($path['segments'][1]))
+				$id = $path['segments'][1];
+			elseif(isset($path['attributes']['id']))
+				$id = $path['attributes']['id'];
+			else
+				throw new exception('box without id');
+			
+			return (string) $this->CI->widgets->parse_box($id);
 		}
 		
 		$controller = modules::load(implode('/', $path['segments']));

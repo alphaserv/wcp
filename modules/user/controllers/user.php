@@ -23,6 +23,40 @@ class User extends MX_Controller
 		$this->settings();
 	}
 	
+	function _tagcall($path)
+	{
+		#form css
+		$this->template->add_head('<link href="'.base_url('static/form.css').'" rel="stylesheet" type="text/css" />');
+		
+		$this->form->clear();
+		
+		switch($path['segments'][1])
+		{
+		
+			case 'login':
+				$this->form
+					->open('user/login')
+					->text('username', 'your username', 'trim|required')
+					->password('password', 'your password', 'trim|required');
+
+				if(1 == (int)$this->site_settings->get_setting('login_captcha', '0'))
+					$this->form->recaptcha('Please enter the captcha code');
+		
+				$this->form
+					->model('user_form_m', 'login')
+					->onsuccess('redirect', 'user/settings')
+					->submit();
+
+				return $this->form->get();
+				break;
+			
+			default:
+				throw new exception('could not find tagcall implementation for user/'.$path['segments'][1]);
+				break;
+				
+		}
+	}
+	
 	function settings()
 	{
 		if(!$this->auth->get_current_user()->is_logged_in())

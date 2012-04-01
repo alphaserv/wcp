@@ -251,7 +251,7 @@ class Tags {
 						}
 					}
 				}
-
+				
 				$return_data = call_user_func($callback, $tag);
 				$content = str_replace($tag['marker'], $return_data, $content, $count);
 

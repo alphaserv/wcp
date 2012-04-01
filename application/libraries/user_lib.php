@@ -5,7 +5,7 @@ class user_
 	//private $CI;
 	private $user_id;
 	
-	private $logged_in;
+	public $logged_in;
 	
 	private $cached_settings;
 	private $cached_access;

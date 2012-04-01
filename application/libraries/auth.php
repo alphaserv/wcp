@@ -11,6 +11,12 @@ class Auth
 		$this->CI->load->model('user_m');
 		$this->CI->load->model('userdata_m');
 		$this->CI->load->library('user_lib');
+		
+		$this->CI->load->library('parser');
+		
+		$this->current_user =& $this->CI->user_lib->get_current_user();
+		
+		$this->CI->parser->add_data(array('auth' => &$this));
 	}
 	
 	function &get_user(int $id)
@@ -20,7 +26,7 @@ class Auth
 	
 	function &get_current_user()
 	{
-		return $this->CI->user_lib->get_current_user();
+		return $this->current_user;
 	}
 	
 	function get_access(string $actionname, int $user_id = null)

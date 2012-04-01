@@ -11,6 +11,8 @@ class Template
 	
 	private $head = '';
 	
+	private $included = false;
+	
 	function __construct()
 	{
 	
@@ -67,8 +69,17 @@ class Template
 	{
 		if (!is_array($data))
 			$data = (array) $data;
-
+		
 		$CI =& get_instance();
+		
+		if($this->included)
+		{
+			echo $CI->parser->parse($view, $data, true);
+			return;
+		}
+		else
+			$this->included = true;
+
 		
 		$data['title'] = $this->title;
 		$data['head'] = $this->head;
