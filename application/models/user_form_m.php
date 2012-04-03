@@ -55,6 +55,7 @@ class User_form_m extends CI_Model
 
 			if($pass == $row->pass)
 			{
+				$this->db->query('UPDATE web_users SET last_activity = NOW(), last_login = NOW() WHERE user_id = ?', array($row->id));
 				$this->user_lib->change_user(new user_($row->id));
 				return true;
 			}
@@ -165,7 +166,8 @@ class User_form_m extends CI_Model
 									ingame_pass,
 									user_activated,
 									admin_activated,
-									priv
+									priv,
+									register_date
 								)
 								VALUES
 								(
@@ -177,7 +179,8 @@ class User_form_m extends CI_Model
 									?,
 									?,
 									?,
-									?
+									?,
+									NOW()
 								);', array($code, $data['username'], $data['email'], $data['password'], $data['alphaserv_password'], $a, $b, $data['priv']));
 			
 			

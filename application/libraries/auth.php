@@ -17,6 +17,8 @@ class Auth
 		$this->current_user =& $this->CI->user_lib->get_current_user();
 		
 		$this->CI->parser->add_data(array('auth' => &$this));
+		
+		$this->get_current_user()->init($this);
 	}
 	
 	function &get_user(int $id)
@@ -54,11 +56,15 @@ class Auth
 	function logout()
 	{
 		$user =& $this->get_current_user();
-		if($user->user_id == -1)
+		
+		if(!$user->logged_in)
 			throw new exception('already logged out'); #TODO: make user error
+			
 		$user->destroy();
 		unset($user); #destroy
 		$user = new user_(-1);
+		
+		$this->CI->user_lib->clear();
 	}
 	function register ($email, $pass, $as_pass, $username)
 	{

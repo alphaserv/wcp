@@ -119,7 +119,7 @@
     		</div>
     		
     		<div id="menu">
-				{as:template:partial:menu}
+				{as:widget:noclan_menu}
     		</div>
 
 			<div id="content">
@@ -150,7 +150,7 @@
 	    </div><!-- /content-->
 	    
 	    <div id="footer">
-		    {as:template:partial:footer}
+	        {as:widget:noclan_footer}
 	    </div> <!-- /footer -->
 
 	</div><!-- /container -->

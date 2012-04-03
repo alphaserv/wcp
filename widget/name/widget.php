@@ -2,7 +2,7 @@
 
 class Name_widget extends alphaserv\Widget
 {
-	function call($arguments)
+	function call($arguments, $inner)
 	{
 		return 'EHm NO';
 	}

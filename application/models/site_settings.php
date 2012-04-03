@@ -88,3 +88,13 @@ class site_settings extends CI_Model
 	}
 				
 }
+
+function as_setting($name, $default)
+{
+	static $CI;
+	
+	if(!isset($CI))
+		$CI =& get_instance();
+		
+	return $CI->site_settings->get_setting($name, $default);
+}

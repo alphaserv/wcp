@@ -38,6 +38,9 @@ class widgets
 	
 	public function box_callback($path)
 	{
+		#why is this needed ? :(
+		$path['content'] = str_replace(array_keys($path['skip_content']), $path['skip_content'], $path['content']);
+		
 		switch($path['segments'][0])
 		{
 			case 'setting':
@@ -51,7 +54,7 @@ class widgets
 				break;
 			
 			default:
-				return $this->run($path['segments'], $path['attributes']);
+				return $this->run($path['segments'], $path['attributes'], $path['content']);
 				break;
 		}	
 	}
@@ -102,10 +105,10 @@ class widgets
 		return new $classname;
 	}
 	
-	private function run($path, $arguments)
+	private function run($path, $arguments, $inner)
 	{
 		$widget = $this->find($path);
 		
-		return $widget->call($arguments);
+		return $widget->call($arguments, $inner);
 	}	
 }

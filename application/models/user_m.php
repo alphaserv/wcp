@@ -71,7 +71,10 @@ class User_m extends CI_Model
 				$pass = $this->hash->hash($password);
 
 			if($pass == $row->pass)
+			{
+				$this->db->query('UPDATE web_users SET last_activity = NOW(), last_login = NOW() WHERE user_id = ?', array($row->id));
 				return array(true, $row->id);
+			}
 		}
 
 		#username or password error
@@ -130,7 +133,8 @@ class User_m extends CI_Model
 										ingame_pass,
 										user_activated,
 										admin_activated,
-										priv '.#TODO:add key field
+										priv,
+										register_date '.#TODO:add key field
 									'FROM
 										web_activation
 									WHERE
@@ -159,7 +163,7 @@ class User_m extends CI_Model
 				$id = $this->db->insert_id();
 
 				#TODO:add new hashing method field in here			
-				$this->db->query('INSERT INTO `web_users` (`user_id`, `pass`) VALUES (?, ?);', array($id, $row->password));
+				$this->db->query('INSERT INTO web_users (user_id, pass, register_date) VALUES (?, ?, ?);', array($id, $row->password, $row->register_date));
 				$this->db->query('INSERT INTO `stats_totals` (`user_id`) VALUES (?);', array($id));
 				
 				#extra, probebly unneeded check
@@ -283,7 +287,8 @@ class User_m extends CI_Model
 									ingame_pass,
 									user_activated,
 									admin_activated,
-									priv
+									priv,
+									register_date
 								)
 								VALUES
 								(
@@ -295,7 +300,8 @@ class User_m extends CI_Model
 									?,
 									?,
 									?,
-									?
+									?,
+									NOW()
 								);', array($code, $username, $email, $pass, $as_pass, $a, $b, $priv));
 			
 			
@@ -460,6 +466,43 @@ class User_m extends CI_Model
 				names
 			WHERE
 				id = ?', array($id))->first_row();
+	}
+	
+	function checklastactivity($id)
+	{
+		#max time inactive to log out
+		$max_active_diff = 2 * 24 * 60 * 60;#2 days
+		
+		#max time staying logged in
+		$max_login_diff = 4 * 24 * 60 * 60; #4 days
+		
+		$res = $this->db->query('
+			SELECT
+				UNIX_TIMESTAMP(last_activity) AS last_activity,
+				UNIX_TIMESTAMP(last_login) AS last_login
+			FROM
+				web_users
+			WHERE
+				user_id = ?', array($id));
+		
+		$this->db->query('UPDATE web_users SET last_activity = NOW() WHERE user_id = ?', array($id));
+		
+		if(!$res or $res->num_rows() < 1)
+			throw new exception('DAFUQ: ur not found in our database but you are in your session! '.$id);
+		
+		$res = $res->first_row();
+		
+		#print_r($res);
+		#print_r($res->last_activity + $max_active_diff);
+		#print("\n");
+		#print_r(time());
+
+		if($res->last_activity + $max_active_diff < time())
+			return false;
+		elseif($res->last_login + $max_login_diff < time())
+			return false;
+		else
+			return true;
 	}
 }
 

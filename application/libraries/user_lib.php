@@ -2,77 +2,85 @@
 
 class user_
 {
-	//private $CI;
-	private $user_id;
+	//private $CI_;
+	public $user_id;
 	
 	public $logged_in;
 	
 	private $cached_settings;
 	private $cached_access;
 	
-	function __construct($id)
+	public function __construct($id)
 	{
-	
 		$this->user_id = $id;
-		if($id == -1)
+	}
+	
+	public function init(&$auth)
+	{
+		if($this->user_id == null || $this->user_id == -1)
 			$this->logged_in = false;
 		else
 		{
 			$this->logged_in = true;
-			$this->update_genic();
-		}
+			$this->update_genic($auth);
+		}	
 	}
 	
-	function get_user_id()
+	public function get_user_id()
 	{
 		return $this->user_id;
 	}
-	function is_logged_in()
+	
+	public function is_logged_in()
 	{
 		return (bool)$this->logged_in;
 	}
 	
-	function get_acces_to($name, $on = -1)
+	public function get_acces_to($name, $on = -1)
 	{
-		static $CI;
-		if(!isset($CI)) $CI =& get_instance();
+		static $CI_;
+		if(!isset($CI_)) $CI_ =& get_instance();
 
-		return $CI->user_m->user_access_to($this->user_id, $name, $on);
+		return $CI_->user_m->user_access_to($this->user_id, $name, $on);
 	}
 	
-	function get_setting(string $name)
+	public function get_setting(string $name)
 	{
-		static $CI;
+		static $CI_;
 
 		if(isset($this->cached_settings[$name]))
 			return $this->cached_settings[$name]; #do not encrypt cache (assuming we don't have a 16-core server)
 
-		if(!isset($CI)) $CI =& get_instance();
+		if(!isset($CI_)) $CI_ =& get_instance();
 		
 		#cache
-		$this->cached_settings[$name] = $this->CI->userdata_m->get($this->user_id, $name, true);
+		$this->cached_settings[$name] = $this->CI_->userdata_m->get($this->user_id, $name, true);
 		return $this->cached_settings[$name];
 	}
 	
-	function set_setting(string $name, $value)
+	public function set_setting(string $name, $value)
 	{
-		static $CI;
+		static $CI_;
 		$this->cached_settings[$name] = $value;
 	
-		if(!isset($CI)) $CI =& get_instance();
+		if(!isset($CI_)) $CI_ =& get_instance();
 		
 		#save in db
-		$this->CI->userdata_m->set($this->user_id, $name, $value);
+		$this->CI_->userdata_m->set($this->user_id, $name, $value);
 	}
 	
-	function update_genic()
+	public function update_genic(&$auth)
 	{
 		if(!$this->logged_in)
 			throw new exception ('cannot update data of non-logged in user');
-		
+
+		if(!get_instance()->user_m->checklastactivity($this->user_id))
+		{
+			$auth->logout();
+		}	
 	}
 	
-	function destroy()
+	public function destroy()
 	{
 		#logout
 	}
@@ -85,22 +93,22 @@ class user_
 
 class User_lib
 {
-	private $CI;
+	private $CI_;
 	
 	#the user wich is visiting the page
 	public static $currentuser;
 	
 	public static $users;
 	
-	function __construct(/*int*/ $id = -1)
+	public function __construct()
 	{
-		$this->CI =& get_instance();
-		$this->CI->load->library('session');
+		$this->CI_ =& get_instance();
+		$this->CI_->load->library('session');
 		#extra unserialize to prevent errors becouse the session class is loaded before this class
-		$usr = unserialize($this->CI->session->userdata('User'));
+		$usr = unserialize($this->CI_->session->userdata('User'));
 		
 		if(!$usr)
-			static::$currentuser = new user_($id);
+			$this->clear();
 		else
 		{
 			static::$currentuser =& $usr;
@@ -111,32 +119,39 @@ class User_lib
 		
 	}
 	
-	function __destruct()
+	public function __destruct()
 	{
 		#save in cache
 		$this->writedown();
 	}
 	
-	function &get_user(int $id)
+	public function &get_user(int $id)
 	{
 		return static::$users[$id];
 	}
 	
-	function &get_current_user()
+	public function &get_current_user()
 	{
 		return static::$currentuser;
 	}
-
-	function change_user(user_ &$new_user)
+	
+	public function change_user(user_ &$new_user)
 	{
 		$id = $new_user->get_user_id();
-		$this->CI->session->set_userdata('User', serialize(static::$currentuser));
+		$this->CI_->session->set_userdata('User', serialize(static::$currentuser));
 		static::$currentuser =& $new_user;
 		static::$users[$id] =& static::$currentuser;
+		
 	}
 	
-	function writedown()
+	public function clear()
 	{
-		$this->CI->session->set_userdata('User', serialize(static::$currentuser));
+		static::$currentuser = new user_(-1);
+		$this->CI_->session->set_userdata('User', serialize(static::$currentuser));
+	}
+	
+	public function writedown()
+	{
+		$this->CI_->session->set_userdata('User', serialize(static::$currentuser));
 	}
 }
