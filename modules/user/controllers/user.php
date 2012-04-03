@@ -250,4 +250,33 @@ class User extends MX_Controller
 		}
 	}
 
+	function data($id = null)
+	{
+		$this->load->model('user_settings');
+		$settings = $this->user_settings->fetch_settings(null, true);
+		
+		$data['form'] = '';
+		$data['errors'] = '';
+		
+		foreach($settings as $setting)
+		{
+			$this->form
+				->open('user/data/'.$setting->id)
+				->text('value', $setting->name.'<sub> = </sub>', 'trim|required', $setting->value)
+				->model('user_settings', 'form_change_setting', array('id' => $id))
+				#->onsuccess('redirect', '/user/data?success=setting')
+				->submit();
+			
+			$data['form'] .= $this->form->get();
+			$data['errors'] .= $this->form->errors;
+			
+			$this->form->clear();
+		}
+
+			
+		$this->template
+			->set_title('User settings')
+			->add_head('<link href="'.base_url('static/form.css').'" rel="stylesheet" type="text/css" />')
+			->build('contact/contact_view', $data);	
+	}
 }
